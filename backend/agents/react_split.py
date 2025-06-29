@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from langchain.agents import Tool, AgentExecutor, create_react_agent
@@ -8,9 +8,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain.prompts import PromptTemplate
-from langchain import hub
 import os
 from dotenv import load_dotenv
+import uvicorn
 
 load_dotenv()
 
@@ -39,7 +39,7 @@ tools = [
     Tool(
         name="Wikipedia",
         func=WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper()).run,
-        description="Domain background"
+        description="Domain background research"
     ),
     Tool(
         name="WebSearch",
@@ -50,11 +50,9 @@ tools = [
 ]
 
 prompt = PromptTemplate.from_template("""
-You are an AI Product Manager. Break the user's goal into actionable subtasks.
-Think step‑by‑step. Use the tools when helpful.
+You are an AI Product Manager. Break the user's goal into actionable subtasks. Think step-by-step. Use the tools when helpful.
 
-You have access to the following tools:
-{tools}
+You have access to the following tools: {tools}
 
 Use the following format:
 
@@ -94,4 +92,7 @@ async def run_agent(req: GoalRequest):
         return {"tasks": result["output"]}
     except Exception as e:
         print(f"Error in agent execution: {str(e)}")
-        return {"error": str(e)}, 500
+        raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8001)
