@@ -1,0 +1,9 @@
+fastapi
+pydantic
+langchain
+langchain-community
+langchain-experimental
+langchain-google-genai
+python-dotenv
+wikipedia
+tavily-python
