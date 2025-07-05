@@ -1,0 +1,54 @@
+BEGIN;
+
+-- Master Goal Table
+CREATE TABLE goals (
+    id SERIAL PRIMARY KEY,
+    goal_text TEXT NOT NULL
+);
+
+-- Phases Table
+CREATE TABLE phases (
+    id SERIAL PRIMARY KEY,
+    goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+    phase_name TEXT NOT NULL,
+    step_order INTEGER NOT NULL,
+    UNIQUE (goal_id, step_order)
+);
+
+-- Tasks Table
+CREATE TABLE tasks (
+    id SERIAL PRIMARY KEY,
+    goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+    phase_id INTEGER NOT NULL REFERENCES phases(id) ON DELETE CASCADE,
+    task_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    estimated_weeks INTEGER NOT NULL
+);
+
+-- Technologies Lookup Table
+CREATE TABLE technologies (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL
+);
+
+-- Deliverables Lookup Table
+CREATE TABLE deliverables (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL
+);
+
+-- Task-Technologies (Many-to-Many)
+CREATE TABLE task_technologies (
+    task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    technology_id INTEGER NOT NULL REFERENCES technologies(id) ON DELETE CASCADE,
+    PRIMARY KEY (task_id, technology_id)
+);
+
+-- Task-Deliverables (Many-to-Many)
+CREATE TABLE task_deliverables (
+    task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    deliverable_id INTEGER NOT NULL REFERENCES deliverables(id) ON DELETE CASCADE,
+    PRIMARY KEY (task_id, deliverable_id)
+);
+
+COMMIT;
